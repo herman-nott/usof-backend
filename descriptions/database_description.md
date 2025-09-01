@@ -11,7 +11,11 @@ Stores user data
 - password_hash
 - full_name
 - email
-- avatar_url
+- profile_picture
+- rating
+- role
+- created_at
+- updated_at
 
 | Field              | Type                                                              | Description                                 |
 |--------------------|-------------------------------------------------------------------|---------------------------------------------|
@@ -61,14 +65,12 @@ Information about post categories
 - id
 - title
 - description
-- created_at
 
 | Field           | Type                                 | Description                  |
 |-----------------|--------------------------------------|------------------------------|
 | `id`            | INT PK                               | Unique ID                    |
 | `title`         | VARCHAR(100)                         | Category title               |
 | `description`   | VARCHAR(255)                         | Category description         |
-| `created_at`    | TIMESTAMP DEFAULT CURRENT_TIMESTAMP  | Category creation date       |
 
 ---
 
@@ -106,16 +108,16 @@ Associates likes of post or comment
 - comment_id
 - type
 - publish_date
-- **UNIQUE(author_id, post_id)**
-- **UNIQUE(author_id, comment_id)**
+- **UNIQUE (author_id, post_id, comment_id)** *-> guarantees that one user can only put one like/dislike under one entity*
 
-| Field            | Type                           | Description        |
-|------------------|--------------------------------|--------------------|
-| `id`             | INT PK                         | Unique ID          |
-| `author_id`      | INT FK -> users.id             | Who liked          |
-| `post_id`        | INT FK -> posts.id, NULL       | Like the post      |
-| `comment_id`     | ENUM('like','dislike')         | Like or dislike    |
-| `publish_date`   | INT FK -> comments.id, NULL    | Like the comment   |
+| Field            | Type                           | Description          |
+|------------------|--------------------------------|----------------------|
+| `id`             | INT PK                         | Unique ID            |
+| `author_id`      | INT FK -> users.id             | Who liked            |
+| `post_id`        | INT FK -> posts.id, NULL       | Like to the post     |
+| `comment_id`     | INT FK -> comments.id, NULL    | Like to the comment  |
+| `type`           | ENUM('like','dislike')         | Like or dislike      |
+| `publish_date`   | INT FK -> comments.id, NULL    | Like date            |
 
 
 
@@ -147,4 +149,6 @@ Relationship between posts and categories
 - comments 1 — M likes
 
 *1 — M (one-to-many)   -> one record in one table can be related to several records in another*
+
+
 *M — M (many-to-many)  -> multiple records in one table can be related to multiple records in another*
