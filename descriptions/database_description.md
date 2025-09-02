@@ -16,19 +16,21 @@ Stores user data
 - role
 - created_at
 - updated_at
+- is_email_confirmed
 
-| Field              | Type                                                              | Description                                 |
-|--------------------|-------------------------------------------------------------------|---------------------------------------------|
-| `id`               | INT PK                                                            | Unique ID                                   |
-| `login`            | VARCHAR(50)                                                       | Login (nickname)                            |
-| `password_hash`    | VARCHAR(255)                                                      | Hashed password                             |
-| `full_name`        | VARCHAR(100)                                                      | Full name                                   |
-| `email`            | VARCHAR(100)                                                      | E-mail                                      |
-| `profile_picture`  | VARCHAR(255)                                                      | Profile picture URL                         |
-| `rating`           | INT DEFAULT 0                                                     | Likes - Dislikes (automatic recalculation)  |
-| `role`             | ENUM('user','admin') DEFAULT 'user'                               | Rights                                      |
-| `created_at`       | TIMESTAMP DEFAULT CURRENT_TIMESTAMP                               | Profile creation date                       |
-| `updated_at`       | TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP   | Profile change date                         |
+| Field                 | Type                                                              | Description                                 |
+|-----------------------|-------------------------------------------------------------------|---------------------------------------------|
+| `id`                  | INT PK                                                            | Unique ID                                   |
+| `login`               | VARCHAR(50)                                                       | Login (nickname)                            |
+| `password_hash`       | VARCHAR(255)                                                      | Hashed password                             |
+| `full_name`           | VARCHAR(100)                                                      | Full name                                   |
+| `email`               | VARCHAR(100)                                                      | E-mail                                      |
+| `profile_picture`     | VARCHAR(255)                                                      | Profile picture URL                         |
+| `rating`              | INT DEFAULT 0                                                     | Likes - Dislikes (automatic recalculation)  |
+| `role`                | ENUM('user','admin') DEFAULT 'user'                               | Rights                                      |
+| `created_at`          | TIMESTAMP DEFAULT CURRENT_TIMESTAMP                               | Profile creation date                       |
+| `updated_at`          | TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP   | Profile change date                         |
+| `is_email_confirmed`  | BOOLEAN DEFAULT FALSE                                             | Profile change date                         |
 
 ---
 
