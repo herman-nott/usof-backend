@@ -23,7 +23,7 @@ async function handleRegister(req, res, db, bcrypt) {
             is_email_confirmed: is_email_confirmed
         });
 
-        const newUser = await db('users').where({ id }).first();
+        // const newUser = await db('users').where({ id }).first();
 
         // добавить сессию
         req.session.userId = user[0].id;

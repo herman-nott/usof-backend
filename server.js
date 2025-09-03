@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 // database
 const db = require('./db');
@@ -10,9 +12,11 @@ const db = require('./db');
 require('dotenv').config();
 
 // import controllers
+// ~~~ Authentication ~~~
 const register = require('./controllers/authentication/register');
 const login = require('./controllers/authentication/login');
 const logout = require('./controllers/authentication/logout');
+const passwordReset = require('./controllers/authentication/password_reset');
 
 // import middleware
 // const requireAuth = require('./middleware/requireAuth');
@@ -39,6 +43,7 @@ app.get('/', (req, res) => {
 app.post('/api/auth/register', (req, res) => { register.handleRegister(req, res, db, bcrypt) });
 app.post('/api/auth/login', (req, res) => { login.handleLogin(req, res, db, bcrypt) });
 app.post('/api/auth/logout', (req, res) => { logout.handleLogout(req, res) });
+app.post('/api/auth/password-reset', (req, res) => { passwordReset.handlePasswordReset(req, res, db, crypto, nodemailer) });
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
