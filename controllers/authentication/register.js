@@ -23,16 +23,16 @@ async function handleRegister(req, res, db, bcrypt) {
             is_email_confirmed: is_email_confirmed
         });
 
-        // const newUser = await db('users').where({ id }).first();
+        const newUser = await db('users').where({ id }).first();
 
         // добавить сессию
-        req.session.userId = user[0].id;
+        req.session.userId = newUser.id;
 
         // вернуть пользователя без пароля
-        const { password_hash, ...safeUser } = user[0];
+        const { password_hash, ...safeUser } = newUser;
         res.json(safeUser);
     } catch (error) {
-        // console.error(error);
+        console.error(error);
         res.status(500).send('Unable to register');
     }
 }
