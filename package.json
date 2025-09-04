@@ -18,6 +18,7 @@
   "homepage": "https://github.com/herman-nott/usof-backend#readme",
   "description": "",
   "dependencies": {
+    "@adminjs/sql": "^2.2.6",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
     "dotenv": "^17.2.2",
