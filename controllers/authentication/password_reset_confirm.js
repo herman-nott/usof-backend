@@ -1,3 +1,5 @@
+import { deflate } from "zlib";
+
 async function handlePasswordResetConfirm(req, res, db, bcrypt, crypto) {
     try {
         const { confirm_token } = req.params;
@@ -50,6 +52,4 @@ async function handlePasswordResetConfirm(req, res, db, bcrypt, crypto) {
     }
 }
 
-module.exports = {
-    handlePasswordResetConfirm
-}
+export default handlePasswordResetConfirm;

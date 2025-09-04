@@ -1,52 +1,87 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
-const session = require('express-session');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+import express from "express";
+import bodyParser from "body-parser";
+import bcrypt from "bcrypt";
+import session from "express-session";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 // database
-const db = require('./db');
+import db from "./db.js";
 
 // .env
-require('dotenv').config();
+import 'dotenv/config';
 
 // import controllers
 // ~~~ Authentication ~~~
-const register = require('./controllers/authentication/register');
-const login = require('./controllers/authentication/login');
-const logout = require('./controllers/authentication/logout');
-const passwordReset = require('./controllers/authentication/password_reset');
-const passwordResetConfirm = require('./controllers/authentication/password_reset_confirm');
+import handleRegister from "./controllers/authentication/register.js";
+import handleLogin from "./controllers/authentication/login.js";
+import handleLogout from "./controllers/authentication/logout.js";
+import handlePasswordReset from "./controllers/authentication/password_reset.js";
+import handlePasswordResetConfirm from "./controllers/authentication/password_reset_confirm.js";
+
 
 // import middleware
 // const requireAuth = require('./middleware/requireAuth');
 
-const app = express();
-const PORT = 3000;
+import AdminJS from 'adminjs'
+import Plugin from '@adminjs/express'
+import { Adapter, Database, Resource } from '@adminjs/sql'
 
-app.use(bodyParser.json());
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,                        // не сохранять сессию, если она не изменена
-    saveUninitialized: false,             // не создавать сессию до первого использования
-    cookie: { secure: false }             // для разработки secure: false, в проде с HTTPS нужно secure: true
-}));
+AdminJS.registerAdapter({
+  Database,
+  Resource,
+})
+
+async function start() {
+    const app = express();
+    const PORT = 3000;
+    
+    const database = await new Adapter('mysql2', {
+        host: '127.0.0.1',
+        port: 3306,
+        user: 'root',
+        password: 'ger06man',
+        database: 'usof_db',
+    }).init();
+
+    const admin = new AdminJS({
+        resources: [
+        {
+            resource: database.table('users'),
+            options: {},
+        },
+        ],
+    });
+
+    admin.watch();
+
+    const router = Plugin.buildRouter(admin);
+
+    app.use(admin.options.rootPath, router);
+    app.use(bodyParser.json());
+    app.use(session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,                        // не сохранять сессию, если она не изменена
+        saveUninitialized: false,             // не создавать сессию до первого использования
+        cookie: { secure: false }             // для разработки secure: false, в проде с HTTPS нужно secure: true
+    }));
 
 
-// === GET Requests ===
-app.get('/', (req, res) => {    
-    // res.send('getting root');
-    res.send(database.users);
-});
+    // === GET Requests ===
+    app.get('/', (req, res) => {    
+        res.send('getting root');
+    });
 
-// === POST Requests ===
-app.post('/api/auth/register', (req, res) => { register.handleRegister(req, res, db, bcrypt) });
-app.post('/api/auth/login', (req, res) => { login.handleLogin(req, res, db, bcrypt) });
-app.post('/api/auth/logout', (req, res) => { logout.handleLogout(req, res) });
-app.post('/api/auth/password-reset', (req, res) => { passwordReset.handlePasswordReset(req, res, db, crypto, nodemailer) });
-app.post('/api/auth/password-reset/:confirm_token', (req, res) => { passwordResetConfirm.handlePasswordResetConfirm(req, res, db, bcrypt, crypto) });
+    // === POST Requests ===
+    app.post('/api/auth/register', (req, res) => { handleRegister(req, res, db, bcrypt) });
+    app.post('/api/auth/login', (req, res) => { handleLogin(req, res, db, bcrypt) });
+    app.post('/api/auth/logout', (req, res) => { handleLogout(req, res) });
+    app.post('/api/auth/password-reset', (req, res) => { handlePasswordReset(req, res, db, crypto, nodemailer) });
+    app.post('/api/auth/password-reset/:confirm_token', (req, res) => { handlePasswordResetConfirm(req, res, db, bcrypt, crypto) });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}
+
+start();

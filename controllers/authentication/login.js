@@ -40,6 +40,4 @@ async function handleLogin(req, res, db, bcrypt) {
 
 }
 
-module.exports = {
-    handleLogin
-}
+export default handleLogin;

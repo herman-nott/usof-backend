@@ -13,6 +13,4 @@ function handleLogout(req, res) {
     });
 }
 
-module.exports = {
-    handleLogout
-};
+export default handleLogout;
