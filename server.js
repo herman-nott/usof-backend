@@ -48,6 +48,12 @@ async function start() {
         resources: [
         {
             resource: database.table('users'),
+            resource: database.table('posts'),
+            resource: database.table('categories'),
+            resource: database.table('post_categories'),
+            resource: database.table('comments'),
+            resource: database.table('likes'),
+            resource: database.table('password_resets'),
             options: {},
         },
         ],
