@@ -1,43 +1,36 @@
-async function handleLogin(req, res, db, bcrypt) {
-    const { emailOrUsername, password } = req.body;
+import User from "../../models/User.js";
 
-    if (!emailOrUsername || !password) {
+async function handleLogin(req, res, db, bcrypt) {
+    const { emailOrLogin, password } = req.body;
+    const userModel = new User(db);
+
+    if (!emailOrLogin || !password) {
         return res.status(400).json('Incorrect form submission');
     }
 
-    db.select('login', 'email', 'password_hash').from('users')
-        .where(function () {
-            this.where('email', '=', emailOrUsername)
-                .orWhere('login', '=', emailOrUsername);
-        })
-        .then(async data => {
-            try {
-                const isValid = await bcrypt.compare(password, data[0].password_hash);
+    try {
+        const user = await userModel.findByEmailOrLogin(emailOrLogin);
 
-                if (isValid) {
-                    return db.select('*').from('users')
-                        .where(function () {
-                            this.where('email', '=', emailOrUsername)
-                                .orWhere('login', '=', emailOrUsername);
-                        })
-                        .then(user => {
-                            // добавить сессию
-                            req.session.userId = user[0].id;
+        if (!user) {
+            return res.status(400).json('Wrong credentials');
+        }
 
-                            // вернуть пользователя без пароля
-                            const { password_hash, ...safeUser } = user[0];
-                            res.json(safeUser);
-                        })
-                        .catch(err => res.status(400).json('Unable to get a user'));
-                } else {
-                    return res.status(400).json('Wrong credentials');
-                }
-            } catch (error) {
-                res.status(500).json('Server error');
-            }
-        })
-        .catch(err => res.status(400).json('Wrong credentials'));
+        const isValid = await bcrypt.compare(password, user.password_hash);
+        if (!isValid) {
+            return res.status(400).json('Wrong credentials');
+        }
 
+        // добавить сессию
+        req.session.userId = user.id;
+
+        // вернуть пользователя без пароля
+        const { password_hash, ...safeUser } = user;
+        res.json(safeUser);
+
+    } catch (error) {
+        // console.error(error);
+        res.status(500).json('Server error');
+    }
 }
 
 export default handleLogin;

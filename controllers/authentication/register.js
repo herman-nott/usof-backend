@@ -1,5 +1,8 @@
+import User from "../../models/User.js";
+
 async function handleRegister(req, res, db, bcrypt) {
     const { login, password, password_confirmation, firstname, lastname, email, is_email_confirmed } = req.body;
+    const userModel = new User(db);
 
     try {
         if (password !== password_confirmation) {
@@ -10,7 +13,7 @@ async function handleRegister(req, res, db, bcrypt) {
 
         const hash = await bcrypt.hash(password, 10);
 
-        const [id] = await db('users').insert({
+        const id = await userModel.create({
             login: login,
             password_hash: hash,
             full_name: `${firstname} ${lastname}`,
@@ -23,7 +26,7 @@ async function handleRegister(req, res, db, bcrypt) {
             is_email_confirmed: is_email_confirmed
         });
 
-        const newUser = await db('users').where({ id }).first();
+        const newUser = await userModel.findById(id);;
 
         // добавить сессию
         req.session.userId = newUser.id;
@@ -32,7 +35,7 @@ async function handleRegister(req, res, db, bcrypt) {
         const { password_hash, ...safeUser } = newUser;
         res.json(safeUser);
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         res.status(500).send('Unable to register');
     }
 }

@@ -1,12 +1,17 @@
+import User from "../../models/User.js";
+import PasswordReset from "../../models/PasswordReset.js";
+
 async function handlePasswordReset(req, res, db, crypto, nodemailer) {
     try {
+        const userModel = new User(db);
+
         const { email } = req.body;
         if (!email) {
             return res.status(400).json({ error: 'Email is required' });
         }
 
         // поиск пользователя
-        const user = await db('users').where({ email }).first();
+        const user = await userModel.findByEmail(email);
         if (!user) {
             return res.status(400).json({ error: `Email ${email} does not exist` });
         }
@@ -14,7 +19,7 @@ async function handlePasswordReset(req, res, db, crypto, nodemailer) {
         const genericResponse = { message: `A password reset link has been sent to email ${email}` };
 
         // удалить старые токены 
-        await db('password_resets').where({ user_id: user.id }).del();
+        await PasswordReset.deletePasswordResets(db, user.id);
 
         // сгенерировать токен и захешировать его
         const confirm_token = crypto.randomBytes(32).toString('hex');
@@ -22,12 +27,7 @@ async function handlePasswordReset(req, res, db, crypto, nodemailer) {
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 минут
 
         // сохранить хеш в БД
-        await db('password_resets').insert({
-            user_id: user.id,
-            token_hash: confirm_token_hash,
-            expires_at: expiresAt,
-            used: false
-        });
+        await PasswordReset.createPasswordReset(db, user.id, confirm_token_hash, expiresAt);
 
         // формирование ссылки сброса пароля
         const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -55,14 +55,14 @@ async function handlePasswordReset(req, res, db, crypto, nodemailer) {
             };
 
             await transporter.sendMail(mailOptions);
-            console.log(`Password reset email sent to ${user.email}`);
+            // console.log(`Password reset email sent to ${user.email}`);
         } catch (error) {
             console.error('Error sending password reset email:', error);
         }
 
         return res.json(genericResponse);
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         return res.status(500).json({ error: 'Server error' });
     }
 }
