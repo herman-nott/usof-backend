@@ -21,7 +21,12 @@ async function handleLogin(req, res, db, bcrypt) {
         }
 
         // добавить сессию
-        req.session.userId = user.id;
+        // req.session.userId = user.id;
+        req.session.user = {
+            id: user.id,
+            role: user.role,
+            login: user.login
+        };
 
         // вернуть пользователя без пароля
         const { password_hash, ...safeUser } = user;

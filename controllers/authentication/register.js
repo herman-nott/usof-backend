@@ -29,7 +29,12 @@ async function handleRegister(req, res, db, bcrypt) {
         const newUser = await userModel.findById(id);;
 
         // добавить сессию
-        req.session.userId = newUser.id;
+        // req.session.userId = newUser.id;
+        req.session.user = {
+            id: newUser.id,
+            role: newUser.role,
+            login: newUser.login
+        };
 
         // вернуть пользователя без пароля
         const { password_hash, ...safeUser } = newUser;
