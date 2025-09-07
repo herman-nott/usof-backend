@@ -18,7 +18,7 @@ async function handleRegister(req, res, db, bcrypt) {
             password_hash: hash,
             full_name: `${firstname} ${lastname}`,
             email: email,
-            profile_picture: 'default.png',
+            profile_picture: 'uploads/avatars/default.png', 
             rating: 0,
             role: 'user',
             created_at: new Date(),
