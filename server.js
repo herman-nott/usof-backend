@@ -18,18 +18,24 @@ import handleLogin from "./controllers/authentication/login.js";
 import handleLogout from "./controllers/authentication/logout.js";
 import handlePasswordReset from "./controllers/authentication/password_reset.js";
 import handlePasswordResetConfirm from "./controllers/authentication/password_reset_confirm.js";
-
+// ~~~ User ~~~
+import handleGetAllUsers from "./controllers/user/getAllUsers.js";
+import handleGetUserById from "./controllers/user/getUserById.js";
+import handleCreateUser from "./controllers/user/createUser.js";
+import handleUpdateAvatar from "./controllers/user/updateAvatar.js";
 
 // import middleware
-// const requireAuth = require('./middleware/requireAuth');
+import requireAuth from "./middleware/requireAuth.js";
+import requireAdmin from "./middleware/requireAdmin.js";
+import upload from "./middleware/uploadAvatar.js";
 
 import AdminJS from 'adminjs'
 import Plugin from '@adminjs/express'
 import { Adapter, Database, Resource } from '@adminjs/sql'
 
 AdminJS.registerAdapter({
-  Database,
-  Resource,
+    Database,
+    Resource,
 })
 
 async function start() {
@@ -68,19 +74,26 @@ async function start() {
         saveUninitialized: false,             // не создавать сессию до первого использования
         cookie: { secure: false }             // для разработки secure: false, в проде с HTTPS нужно secure: true
     }));
+    app.use("/uploads", express.static("uploads"));
 
 
     // === GET Requests ===
     app.get('/', (req, res) => {    
         res.send('getting root');
     });
+    app.get('/api/users', (req, res) => { handleGetAllUsers(req, res, db) });
+    app.get('/api/users/:user_id', (req, res) => { handleGetUserById(req, res, db) });
 
     // === POST Requests ===
     app.post('/api/auth/register', (req, res) => { handleRegister(req, res, db, bcrypt) });
     app.post('/api/auth/login', (req, res) => { handleLogin(req, res, db, bcrypt) });
-    app.post('/api/auth/logout', (req, res) => { handleLogout(req, res) });
+    app.post('/api/auth/logout', requireAuth, (req, res) => { handleLogout(req, res) });
     app.post('/api/auth/password-reset', (req, res) => { handlePasswordReset(req, res, db, crypto, nodemailer) });
     app.post('/api/auth/password-reset/:confirm_token', (req, res) => { handlePasswordResetConfirm(req, res, db, bcrypt, crypto) });
+    app.post('/api/users', requireAdmin, (req, res) => { handleCreateUser(req, res, db, bcrypt) });
+
+    // === PATCH Requests ===
+    app.patch('/api/users/avatar', requireAuth, upload.single('avatar'), (req, res) => { handleUpdateAvatar(req, res, db) });
 
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
