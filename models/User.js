@@ -40,6 +40,24 @@ class User {
     async updateAvatar(userId, avatarPath) {
         return await this.db('users').where({ id: userId }).update({ profile_picture: avatarPath });
     }
+
+    // обновить по id
+    async updateById(userId, updates) {
+        await this.db('users')
+            .where({ id: userId })
+            .update({
+                ...updates,
+                updated_at: new Date()
+            });
+
+        return this.findById(userId);
+    }
+
+    // удалить по id
+    async deleteById(userId) {
+        const deletedCount = await this.db('users').where({ id: userId }).del();
+        return deletedCount;
+    }
 }
 
 export default User;

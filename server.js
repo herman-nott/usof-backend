@@ -5,13 +5,16 @@ import session from "express-session";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
+
 // database
 import db from "./db.js";
+
 
 // .env
 import 'dotenv/config';
 
-// import controllers
+
+// controllers
 // ~~~ Authentication ~~~
 import handleRegister from "./controllers/authentication/register.js";
 import handleLogin from "./controllers/authentication/login.js";
@@ -23,11 +26,16 @@ import handleGetAllUsers from "./controllers/user/getAllUsers.js";
 import handleGetUserById from "./controllers/user/getUserById.js";
 import handleCreateUser from "./controllers/user/createUser.js";
 import handleUpdateAvatar from "./controllers/user/updateAvatar.js";
+import handleUpdateUser from "./controllers/user/updateUser.js";
+import handleDeleteUser from "./controllers/user/deleteUser.js";
 
-// import middleware
+
+// middleware
 import requireAuth from "./middleware/requireAuth.js";
 import requireAdmin from "./middleware/requireAdmin.js";
 import upload from "./middleware/uploadAvatar.js";
+import requireAdminOrSelf from "./middleware/requireAdminOrSelf.js";
+
 
 import AdminJS from 'adminjs'
 import Plugin from '@adminjs/express'
@@ -94,6 +102,10 @@ async function start() {
 
     // === PATCH Requests ===
     app.patch('/api/users/avatar', requireAuth, upload.single('avatar'), (req, res) => { handleUpdateAvatar(req, res, db) });
+    app.patch('/api/users/:user_id', requireAuth, requireAdminOrSelf, (req, res) => { handleUpdateUser(req, res, db) });
+
+    // === DELETE Requests ===
+    app.delete('/api/users/:user_id', requireAuth, requireAdminOrSelf, (req, res) => { handleDeleteUser(req, res, db) });
 
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
