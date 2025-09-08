@@ -1,3 +1,4 @@
+// import libs
 import express from "express";
 import bodyParser from "body-parser";
 import bcrypt from "bcrypt";
@@ -5,14 +6,11 @@ import session from "express-session";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
-
 // database
 import db from "./db.js";
 
-
 // .env
 import 'dotenv/config';
-
 
 // controllers
 // ~~~ Authentication ~~~
@@ -28,7 +26,12 @@ import handleCreateUser from "./controllers/user/createUser.js";
 import handleUpdateAvatar from "./controllers/user/updateAvatar.js";
 import handleUpdateUser from "./controllers/user/updateUser.js";
 import handleDeleteUser from "./controllers/user/deleteUser.js";
-
+// ~~~ Post ~~~
+import handleGetAllPosts from "./controllers/post/getAllPosts.js";
+import handleGetPostById from "./controllers/post/getPostById.js";
+import handleGetCommentsByPostId from "./controllers/post/getCommentsByPostId.js";
+import handleCreateComment from "./controllers/post/createComment.js";
+import handleGetCategoriesByPostId from "./controllers/post/getCategoriesByPostId.js";
 
 // middleware
 import requireAuth from "./middleware/requireAuth.js";
@@ -36,7 +39,7 @@ import requireAdmin from "./middleware/requireAdmin.js";
 import upload from "./middleware/uploadAvatar.js";
 import requireAdminOrSelf from "./middleware/requireAdminOrSelf.js";
 
-
+// adminjs
 import AdminJS from 'adminjs'
 import Plugin from '@adminjs/express'
 import { Adapter, Database, Resource } from '@adminjs/sql'
@@ -51,11 +54,11 @@ async function start() {
     const PORT = 3000;
     
     const database = await new Adapter('mysql2', {
-        host: '127.0.0.1',
-        port: 3306,
-        user: 'root',
-        password: 'ger06man',
-        database: 'usof_db',
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT),
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
     }).init();
 
     const admin = new AdminJS({
@@ -63,7 +66,7 @@ async function start() {
             { resource: database.table('users') },
             { resource: database.table('posts') },
             { resource: database.table('categories') },
-            { resource: database.table('post_categories') },
+            // { resource: database.table('post_categories') },
             { resource: database.table('comments') },
             { resource: database.table('likes') },
             { resource: database.table('password_resets') },
@@ -91,6 +94,10 @@ async function start() {
     });
     app.get('/api/users', (req, res) => { handleGetAllUsers(req, res, db) });
     app.get('/api/users/:user_id', (req, res) => { handleGetUserById(req, res, db) });
+    app.get('/api/posts', (req, res) => { handleGetAllPosts(req, res, db) });
+    app.get('/api/posts/:post_id', (req, res) => { handleGetPostById(req, res, db) });
+    app.get('/api/posts/:post_id/comments', (req, res) => { handleGetCommentsByPostId(req, res, db) });
+    app.get('/api/posts/:post_id/categories', (req, res) => { handleGetCategoriesByPostId(req, res, db) });
 
     // === POST Requests ===
     app.post('/api/auth/register', (req, res) => { handleRegister(req, res, db, bcrypt) });
@@ -99,6 +106,7 @@ async function start() {
     app.post('/api/auth/password-reset', (req, res) => { handlePasswordReset(req, res, db, crypto, nodemailer) });
     app.post('/api/auth/password-reset/:confirm_token', (req, res) => { handlePasswordResetConfirm(req, res, db, bcrypt, crypto) });
     app.post('/api/users', requireAdmin, (req, res) => { handleCreateUser(req, res, db, bcrypt) });
+    app.post('/api/posts/:post_id/comments', requireAuth, (req, res) => { handleCreateComment(req, res, db) });
 
     // === PATCH Requests ===
     app.patch('/api/users/avatar', requireAuth, upload.single('avatar'), (req, res) => { handleUpdateAvatar(req, res, db) });
