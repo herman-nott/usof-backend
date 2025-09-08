@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS comments (
     post_id INT NOT NULL,
     author_id INT NOT NULL,
     content TEXT,
-    publish_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('active', 'inactive') DEFAULT 'active',
     parent_id INT NULL,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
