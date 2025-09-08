@@ -1,6 +1,6 @@
 import User from "../../models/User.js";
 
-function handleUpdateAvatar(req, res, db) {
+async function handleUpdateAvatar(req, res, db) {
     try {
         if (!req.file) {
             return res.status(400).json({ error: "No file uploaded" });
@@ -10,7 +10,7 @@ function handleUpdateAvatar(req, res, db) {
         const avatarPath = `/uploads/avatars/${req.file.filename}`;
 
         const userModel = new User(db);
-        userModel.updateAvatar(userId, avatarPath);
+        await userModel.updateAvatar(userId, avatarPath);
 
         res.json({ message: "Avatar updated successfully", avatar: avatarPath });
     } catch (error) {
