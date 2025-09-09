@@ -32,22 +32,29 @@ import handleGetPostById from "./controllers/post/getPostById.js";
 import handleGetCommentsByPostId from "./controllers/post/getCommentsByPostId.js";
 import handleCreateComment from "./controllers/post/createComment.js";
 import handleGetCategoriesByPostId from "./controllers/post/getCategoriesByPostId.js";
+import handleGetLikesByPostId from "./controllers/post/getLikesByPostId.js";
+import handleCreatePost from "./controllers/post/createPost.js";
+import handleCreateLikeForPost from "./controllers/post/createLikeForPost.js";
+import handleUpdatePost from "./controllers/post/updatePost.js";
+import handleDeletePost from "./controllers/post/deletePost.js";
+import handleDeleteLikeFromPost from "./controllers/post/deleteLikeFromPost.js";
 
 // middleware
 import requireAuth from "./middleware/requireAuth.js";
 import requireAdmin from "./middleware/requireAdmin.js";
 import upload from "./middleware/uploadAvatar.js";
 import requireAdminOrSelf from "./middleware/requireAdminOrSelf.js";
+import requirePostAuthorOrAdmin from "./middleware/requirePostAuthorOrAdmin.js";
 
 // adminjs
-import AdminJS from 'adminjs'
-import Plugin from '@adminjs/express'
-import { Adapter, Database, Resource } from '@adminjs/sql'
+import AdminJS from 'adminjs';
+import Plugin from '@adminjs/express';
+import { Adapter, Database, Resource } from '@adminjs/sql';
 
 AdminJS.registerAdapter({
     Database,
     Resource,
-})
+});
 
 async function start() {
     const app = express();
@@ -98,6 +105,7 @@ async function start() {
     app.get('/api/posts/:post_id', (req, res) => { handleGetPostById(req, res, db) });
     app.get('/api/posts/:post_id/comments', (req, res) => { handleGetCommentsByPostId(req, res, db) });
     app.get('/api/posts/:post_id/categories', (req, res) => { handleGetCategoriesByPostId(req, res, db) });
+    app.get('/api/posts/:post_id/like', (req, res) => { handleGetLikesByPostId(req, res, db) });
 
     // === POST Requests ===
     app.post('/api/auth/register', (req, res) => { handleRegister(req, res, db, bcrypt) });
@@ -107,13 +115,18 @@ async function start() {
     app.post('/api/auth/password-reset/:confirm_token', (req, res) => { handlePasswordResetConfirm(req, res, db, bcrypt, crypto) });
     app.post('/api/users', requireAdmin, (req, res) => { handleCreateUser(req, res, db, bcrypt) });
     app.post('/api/posts/:post_id/comments', requireAuth, (req, res) => { handleCreateComment(req, res, db) });
+    app.post('/api/posts/', requireAuth, (req, res) => { handleCreatePost(req, res, db) });
+    app.post('/api/posts/:post_id/like', requireAuth, (req, res) => { handleCreateLikeForPost(req, res, db) });
 
     // === PATCH Requests ===
     app.patch('/api/users/avatar', requireAuth, upload.single('avatar'), (req, res) => { handleUpdateAvatar(req, res, db) });
     app.patch('/api/users/:user_id', requireAuth, requireAdminOrSelf, (req, res) => { handleUpdateUser(req, res, db) });
+    app.patch('/api/posts/:post_id', requireAuth, (req, res) => { handleUpdatePost(req, res, db) });
 
     // === DELETE Requests ===
     app.delete('/api/users/:user_id', requireAuth, requireAdminOrSelf, (req, res) => { handleDeleteUser(req, res, db) });
+    app.delete('/api/posts/:post_id', requireAuth, requirePostAuthorOrAdmin, (req, res) => { handleDeletePost(req, res, db) });
+    app.delete('/api/posts/:post_id/like', requireAuth, (req, res) => { handleDeleteLikeFromPost(req, res, db) });
 
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);

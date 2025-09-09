@@ -26,6 +26,55 @@ class Post {
     async findById(postId) {
         return await this.db('posts').where({ id: postId }).first();
     }
+
+    // создать пост
+    async create(authorId, title, content) {
+        const [id] = await this.db("posts").insert({
+            author_id: authorId,
+            title: title,
+            content: content
+        });
+
+        return await this.db("posts").where({ id: id }).first();
+    }
+
+    // обновить пост
+    async update(postId, data) {
+        const updateData = {};
+
+        if (data.title !== undefined) {
+            updateData.title = data.title;
+        }
+        if (data.content !== undefined) {
+            updateData.content = data.content;
+        }
+
+        if (Object.keys(updateData).length > 0) {
+            updateData.updated_at = this.db.fn.now();
+            await this.db("posts")
+                .where({ id: postId })
+                .update(updateData);
+        }
+
+        if (data.categories !== undefined) {
+            await this.db("post_categories").where({ post_id: postId }).del();
+
+            if (Array.isArray(data.categories) && data.categories.length > 0) {
+                const newCategories = data.categories.map(catId => ({
+                    post_id: postId,
+                    category_id: catId
+                }));
+                await this.db("post_categories").insert(newCategories);
+            }
+        }
+
+        return await this.findById(postId);
+    }
+
+    // удалить пост
+    async delete(postId) {
+        return await this.db('posts').where({ id: postId }).del();
+    }
 }
 
 export default Post;
