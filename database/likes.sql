@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS likes (
     post_id INT DEFAULT NULL,
     comment_id INT DEFAULT NULL,
     type ENUM('like', 'dislike') NOT NULL,
-    publish_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE,
