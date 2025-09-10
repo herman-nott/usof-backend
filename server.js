@@ -17,8 +17,9 @@ import 'dotenv/config';
 import handleRegister from "./controllers/authentication/register.js";
 import handleLogin from "./controllers/authentication/login.js";
 import handleLogout from "./controllers/authentication/logout.js";
-import handlePasswordReset from "./controllers/authentication/password_reset.js";
-import handlePasswordResetConfirm from "./controllers/authentication/password_reset_confirm.js";
+import handlePasswordReset from "./controllers/authentication/passwordReset.js";
+import handlePasswordResetConfirm from "./controllers/authentication/passwordResetConfirm.js";
+import handleVerifyEmail from "./controllers/authentication/verifyEmail.js";
 // ~~~ User ~~~
 import handleGetAllUsers from "./controllers/user/getAllUsers.js";
 import handleGetUserById from "./controllers/user/getUserById.js";
@@ -45,6 +46,7 @@ import requireAdmin from "./middleware/requireAdmin.js";
 import upload from "./middleware/uploadAvatar.js";
 import requireAdminOrSelf from "./middleware/requireAdminOrSelf.js";
 import requirePostAuthorOrAdmin from "./middleware/requirePostAuthorOrAdmin.js";
+import requireEmailConfirmed from "./middleware/requireEmailConfirmed.js";
 
 // adminjs
 import AdminJS from 'adminjs';
@@ -77,6 +79,7 @@ async function start() {
             { resource: database.table('comments') },
             { resource: database.table('likes') },
             { resource: database.table('password_resets') },
+            { resource: database.table('email_verifications') },
         ],
     });
 
@@ -108,8 +111,8 @@ async function start() {
     app.get('/api/posts/:post_id/like', (req, res) => { handleGetLikesByPostId(req, res, db) });
 
     // === POST Requests ===
-    app.post('/api/auth/register', (req, res) => { handleRegister(req, res, db, bcrypt) });
-    app.post('/api/auth/login', (req, res) => { handleLogin(req, res, db, bcrypt) });
+    app.post('/api/auth/register', (req, res) => { handleRegister(req, res, db, bcrypt, nodemailer) });
+    app.post('/api/auth/login', requireEmailConfirmed, (req, res) => { handleLogin(req, res, db, bcrypt) });
     app.post('/api/auth/logout', requireAuth, (req, res) => { handleLogout(req, res) });
     app.post('/api/auth/password-reset', (req, res) => { handlePasswordReset(req, res, db, crypto, nodemailer) });
     app.post('/api/auth/password-reset/:confirm_token', (req, res) => { handlePasswordResetConfirm(req, res, db, bcrypt, crypto) });
@@ -117,6 +120,7 @@ async function start() {
     app.post('/api/posts/:post_id/comments', requireAuth, (req, res) => { handleCreateComment(req, res, db) });
     app.post('/api/posts/', requireAuth, (req, res) => { handleCreatePost(req, res, db) });
     app.post('/api/posts/:post_id/like', requireAuth, (req, res) => { handleCreateLikeForPost(req, res, db) });
+    app.post('/api/auth/register/verify-email', (req, res) => { handleVerifyEmail(req, res, db) });
 
     // === PATCH Requests ===
     app.patch('/api/users/avatar', requireAuth, upload.single('avatar'), (req, res) => { handleUpdateAvatar(req, res, db) });

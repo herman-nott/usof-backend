@@ -58,6 +58,29 @@ class User {
         const deletedCount = await this.db('users').where({ id: userId }).del();
         return deletedCount;
     }
+
+    // обновить is_email_confirmed
+    async updateIsEmailConfirmed(userId, value = true) {
+        return await this.db('users')
+            .where({ id: userId })
+            .update({
+                is_email_confirmed: value,
+                updated_at: new Date()
+            });
+    }
+
+    // обновить пользователя
+    async update(id, fields) {
+        if (!id || !fields || Object.keys(fields).length === 0) {
+            throw new Error("User id and fields to update are required");
+        }
+
+        await this.db('users')
+            .where({ id })
+            .update(fields);
+
+        return await this.findById(id);
+    }
 }
 
 export default User;
