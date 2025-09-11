@@ -75,6 +75,23 @@ class Post {
     async delete(postId) {
         return await this.db('posts').where({ id: postId }).del();
     }
+
+    // получить все посты по category_id
+    async findPostsByCategoryId(categoryId) {
+        return await this.db('posts')
+            .join('post_categories', 'posts.id', 'post_categories.post_id')
+            .where('post_categories.category_id', categoryId)
+            .select(
+                'posts.id',
+                'posts.author_id',
+                'posts.title',
+                'posts.publish_date',
+                'posts.status',
+                'posts.content',
+                'posts.created_at',
+                'posts.updated_at'
+            );
+    }
 }
 
 export default Post;

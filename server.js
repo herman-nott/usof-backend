@@ -39,6 +39,13 @@ import handleCreateLikeForPost from "./controllers/post/createLikeForPost.js";
 import handleUpdatePost from "./controllers/post/updatePost.js";
 import handleDeletePost from "./controllers/post/deletePost.js";
 import handleDeleteLikeFromPost from "./controllers/post/deleteLikeFromPost.js";
+// ~~~ Categories ~~~
+import handleGetAllCategories from "./controllers/categories/getAllCategories.js";
+import handleGetCategoryById from "./controllers/categories/getCategoryById.js";
+import handleGetPostsByCategoryId from "./controllers/categories/getPostsByCategoryId.js";
+import handleCreateCategory from "./controllers/categories/createCategory.js";
+import handleUpdateCategory  from "./controllers/categories/updateCategory.js";
+import handleDeleteCategory  from "./controllers/categories/deleteCategory.js";
 
 // middleware
 import requireAuth from "./middleware/requireAuth.js";
@@ -109,6 +116,9 @@ async function start() {
     app.get('/api/posts/:post_id/comments', (req, res) => { handleGetCommentsByPostId(req, res, db) });
     app.get('/api/posts/:post_id/categories', (req, res) => { handleGetCategoriesByPostId(req, res, db) });
     app.get('/api/posts/:post_id/like', (req, res) => { handleGetLikesByPostId(req, res, db) });
+    app.get('/api/categories', (req, res) => { handleGetAllCategories(req, res, db) });
+    app.get('/api/categories/:category_id', (req, res) => { handleGetCategoryById(req, res, db) });
+    app.get('/api/categories/:category_id/posts', (req, res) => { handleGetPostsByCategoryId(req, res, db) });
 
     // === POST Requests ===
     app.post('/api/auth/register', (req, res) => { handleRegister(req, res, db, bcrypt, nodemailer) });
@@ -121,16 +131,19 @@ async function start() {
     app.post('/api/posts/', requireAuth, (req, res) => { handleCreatePost(req, res, db) });
     app.post('/api/posts/:post_id/like', requireAuth, (req, res) => { handleCreateLikeForPost(req, res, db) });
     app.post('/api/auth/register/verify-email', (req, res) => { handleVerifyEmail(req, res, db) });
+    app.post('/api/categories', (req, res) => { handleCreateCategory(req, res, db) });
 
     // === PATCH Requests ===
     app.patch('/api/users/avatar', requireAuth, upload.single('avatar'), (req, res) => { handleUpdateAvatar(req, res, db) });
     app.patch('/api/users/:user_id', requireAuth, requireAdminOrSelf, (req, res) => { handleUpdateUser(req, res, db) });
     app.patch('/api/posts/:post_id', requireAuth, (req, res) => { handleUpdatePost(req, res, db) });
+    app.patch('/api/categories/:category_id', (req, res) => { handleUpdateCategory(req, res, db) });
 
     // === DELETE Requests ===
     app.delete('/api/users/:user_id', requireAuth, requireAdminOrSelf, (req, res) => { handleDeleteUser(req, res, db) });
     app.delete('/api/posts/:post_id', requireAuth, requirePostAuthorOrAdmin, (req, res) => { handleDeletePost(req, res, db) });
     app.delete('/api/posts/:post_id/like', requireAuth, (req, res) => { handleDeleteLikeFromPost(req, res, db) });
+    app.delete('/api/categories/:category_id', (req, res) => { handleDeleteCategory(req, res, db) });
 
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
