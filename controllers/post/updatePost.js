@@ -4,7 +4,7 @@ async function handleUpdatePost(req, res, db) {
     try {
         const { post_id } = req.params;
         const { title, content, categories } = req.body;
-        const userId = req.session.user.id;;
+        const userId = req.session.user.id;
 
         const postModel = new Post(db);
         const post = await postModel.findById(post_id);
