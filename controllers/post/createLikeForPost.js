@@ -12,7 +12,7 @@ async function handleCreateLikeForPost(req, res, db) {
         const authorId = req.session.user.id;
 
         const likeModel = new Like(db);
-        const like = await likeModel.createOrUpdate(post_id, authorId, type);
+        const like = await likeModel.createOrUpdate(post_id, null, authorId, type);
 
         res.status(201).json(like);
     } catch (error) {
