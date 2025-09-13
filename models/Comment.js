@@ -36,6 +36,25 @@ class Comment {
 
         return await this.db('comments').where({ id: id }).first();
     }
+
+    // найти комметарий по id
+    async findById(id) {
+        return await this.db("comments").where({ id }).first();
+    }
+
+    // изменить комментарий
+    async update(id, content) {
+        await this.db("comments")
+            .where({ id: id })
+            .update({ content: content });
+
+        return this.findById(id);
+    }
+
+    // удалить комментарий
+    async delete(id) {
+        return await this.db("comments").where({ id }).del();
+    }
 }
 
 export default Comment;

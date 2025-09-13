@@ -1,12 +1,13 @@
 import Like from "../../models/Like.js";
 
-async function handleDeleteLikeFromPost(req, res, db) {
+async function handleDeleteLikeForComment(req, res, db) {
     try {
-        const { post_id } = req.params;
-        const userId = req.session.user.id;
+        const { comment_id } = req.params;
+        const authorId = req.session.user.id;
 
         const likeModel = new Like(db);
-        const deleted = await likeModel.delete(post_id, null, userId);
+
+        const deleted = await likeModel.delete(null, comment_id, authorId);
 
         if (!deleted) {
             return res.status(404).json({ error: "Like not found" });
@@ -19,4 +20,4 @@ async function handleDeleteLikeFromPost(req, res, db) {
     }
 }
 
-export default handleDeleteLikeFromPost;
+export default handleDeleteLikeForComment

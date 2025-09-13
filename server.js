@@ -46,6 +46,13 @@ import handleGetPostsByCategoryId from "./controllers/categories/getPostsByCateg
 import handleCreateCategory from "./controllers/categories/createCategory.js";
 import handleUpdateCategory  from "./controllers/categories/updateCategory.js";
 import handleDeleteCategory  from "./controllers/categories/deleteCategory.js";
+// ~~~ Comments ~~~
+import handleGetCommentById from "./controllers/comments/getCommentById.js";
+import handleGetLikesByCommentId from "./controllers/comments/getLikesByCommentId.js";
+import handleCreateLikeForComment from "./controllers/comments/createLikeForComment.js";
+import handleUpdateComment from "./controllers/comments/updateComment.js";
+import handleDeleteComment from "./controllers/comments/deleteComment.js";
+import handleDeleteLikeForComment from "./controllers/comments/deleteLikeForComment.js";
 
 // middleware
 import requireAuth from "./middleware/requireAuth.js";
@@ -54,6 +61,8 @@ import upload from "./middleware/uploadAvatar.js";
 import requireAdminOrSelf from "./middleware/requireAdminOrSelf.js";
 import requirePostAuthorOrAdmin from "./middleware/requirePostAuthorOrAdmin.js";
 import requireEmailConfirmed from "./middleware/requireEmailConfirmed.js";
+import requireCommentAuthorOrAdmin from "./middleware/requireCommentAuthorOrAdmin.js";
+import requireOwnLike from "./middleware/requireOwnLike.js";
 
 // adminjs
 import AdminJS from 'adminjs';
@@ -119,6 +128,8 @@ async function start() {
     app.get('/api/categories', (req, res) => { handleGetAllCategories(req, res, db) });
     app.get('/api/categories/:category_id', (req, res) => { handleGetCategoryById(req, res, db) });
     app.get('/api/categories/:category_id/posts', (req, res) => { handleGetPostsByCategoryId(req, res, db) });
+    app.get('/api/comments/:comment_id', (req, res) => { handleGetCommentById(req, res, db) });
+    app.get('/api/comments/:comment_id/like', (req, res) => { handleGetLikesByCommentId(req, res, db) });
 
     // === POST Requests ===
     app.post('/api/auth/register', (req, res) => { handleRegister(req, res, db, bcrypt, nodemailer) });
@@ -132,18 +143,22 @@ async function start() {
     app.post('/api/posts/:post_id/like', requireAuth, (req, res) => { handleCreateLikeForPost(req, res, db) });
     app.post('/api/auth/register/verify-email', (req, res) => { handleVerifyEmail(req, res, db) });
     app.post('/api/categories', (req, res) => { handleCreateCategory(req, res, db) });
+    app.post('/api/comments/:comment_id/like', requireAuth, (req, res) => { handleCreateLikeForComment(req, res, db) });
 
     // === PATCH Requests ===
     app.patch('/api/users/avatar', requireAuth, upload.single('avatar'), (req, res) => { handleUpdateAvatar(req, res, db) });
     app.patch('/api/users/:user_id', requireAuth, requireAdminOrSelf, (req, res) => { handleUpdateUser(req, res, db) });
     app.patch('/api/posts/:post_id', requireAuth, (req, res) => { handleUpdatePost(req, res, db) });
     app.patch('/api/categories/:category_id', (req, res) => { handleUpdateCategory(req, res, db) });
+    app.patch('/api/comments/:comment_id', requireAuth, (req, res) => { handleUpdateComment(req, res, db) });
 
     // === DELETE Requests ===
     app.delete('/api/users/:user_id', requireAuth, requireAdminOrSelf, (req, res) => { handleDeleteUser(req, res, db) });
     app.delete('/api/posts/:post_id', requireAuth, requirePostAuthorOrAdmin, (req, res) => { handleDeletePost(req, res, db) });
-    app.delete('/api/posts/:post_id/like', requireAuth, (req, res) => { handleDeleteLikeFromPost(req, res, db) });
+    app.delete('/api/posts/:post_id/like', requireAuth, requireOwnLike, (req, res) => { handleDeleteLikeFromPost(req, res, db) });
     app.delete('/api/categories/:category_id', (req, res) => { handleDeleteCategory(req, res, db) });
+    app.delete('/api/comments/:comment_id', requireAuth, requireCommentAuthorOrAdmin, (req, res) => { handleDeleteComment(req, res, db) });
+    app.delete('/api/comments/:comment_id/like', requireAuth, requireOwnLike, (req, res) => { handleDeleteLikeForComment(req, res, db) });
 
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
