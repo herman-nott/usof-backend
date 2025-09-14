@@ -74,6 +74,8 @@ AdminJS.registerAdapter({
     Resource,
 });
 
+import makeUserResource from "./admin/userResource.js";
+
 async function start() {
     const app = express();
     const PORT = 3000;
@@ -88,7 +90,8 @@ async function start() {
 
     const admin = new AdminJS({
         resources: [
-            { resource: database.table('users') },
+            // { resource: database.table('users') },
+            makeUserResource(database),
             { resource: database.table('posts') },
             { resource: database.table('categories') },
             // { resource: database.table('post_categories') },
