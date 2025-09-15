@@ -39,6 +39,8 @@ import handleCreateLikeForPost from "./controllers/post/createLikeForPost.js";
 import handleUpdatePost from "./controllers/post/updatePost.js";
 import handleDeletePost from "./controllers/post/deletePost.js";
 import handleDeleteLikeFromPost from "./controllers/post/deleteLikeFromPost.js";
+import handleLockPost from "./controllers/post/lockPost.js";
+import handleUnlockPost from "./controllers/post/unlockPost.js";
 // ~~~ Categories ~~~
 import handleGetAllCategories from "./controllers/categories/getAllCategories.js";
 import handleGetCategoryById from "./controllers/categories/getCategoryById.js";
@@ -53,6 +55,8 @@ import handleCreateLikeForComment from "./controllers/comments/createLikeForComm
 import handleUpdateComment from "./controllers/comments/updateComment.js";
 import handleDeleteComment from "./controllers/comments/deleteComment.js";
 import handleDeleteLikeForComment from "./controllers/comments/deleteLikeForComment.js";
+import handleLockComment  from "./controllers/comments/lockComment.js";
+import handleUnlockComment from "./controllers/comments/unlockComment.js";
 
 // middleware
 import requireAuth from "./middleware/requireAuth.js";
@@ -154,6 +158,10 @@ async function start() {
     app.patch('/api/posts/:post_id', requireAuth, (req, res) => { handleUpdatePost(req, res, db) });
     app.patch('/api/categories/:category_id', (req, res) => { handleUpdateCategory(req, res, db) });
     app.patch('/api/comments/:comment_id', requireAuth, (req, res) => { handleUpdateComment(req, res, db) });
+    app.patch('/api/posts/:post_id/lock', requireAuth, requirePostAuthorOrAdmin, (req, res) => { handleLockPost(req, res, db) });
+    app.patch('/api/posts/:post_id/unlock', requireAuth, requirePostAuthorOrAdmin, (req, res) => { handleUnlockPost(req, res, db) });
+    app.patch('/api/comments/:comment_id/lock', requireAuth, requireCommentAuthorOrAdmin, (req, res) => { handleLockComment(req, res, db) });
+    app.patch('/api/comments/:comment_id/unlock', requireAuth, requireCommentAuthorOrAdmin, (req, res) => { handleUnlockComment(req, res, db) });
 
     // === DELETE Requests ===
     app.delete('/api/users/:user_id', requireAuth, requireAdminOrSelf, (req, res) => { handleDeleteUser(req, res, db) });

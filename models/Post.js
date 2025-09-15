@@ -92,6 +92,25 @@ class Post {
                 'posts.updated_at'
             );
     }
+
+    // залочить пост
+    async lock(id) {
+        await this.db('posts').where({ id }).update({ status: 'inactive' });
+        return { message: "Post locked successfully" };
+    }
+
+    // разлочить пост
+    async unlock(id) {
+        await this.db('posts').where({ id }).update({ status: 'active' });
+        return { message: "Post unlocked successfully" };
+    }
+
+    // проверить залочен ли пост
+    async isLocked(id) {
+        const post = await this.db('posts').where({ id }).select('status').first();
+        if (!post) return false;
+        return post.status !== 'active';
+    }
 }
 
 export default Post;

@@ -55,6 +55,25 @@ class Comment {
     async delete(id) {
         return await this.db("comments").where({ id }).del();
     }
+
+    // залочить коммент
+    async lock(id) {
+        await this.db('comments').where({ id }).update({ status: 'inactive' });
+        return { message: "Comment locked successfully" };
+    }
+
+    // разлочить коммент
+    async unlock(id) {
+        await this.db('comments').where({ id }).update({ status: 'active' });
+        return { message: "Comment unlocked successfully" };
+    }
+
+    // проверить залочен ли коммент
+    async isLocked(id) {
+        const post = await this.db('comments').where({ id }).select('status').first();
+        if (!post) return false;
+        return post.status !== 'active';
+    }
 }
 
 export default Comment;
