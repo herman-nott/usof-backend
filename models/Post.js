@@ -4,21 +4,35 @@ class Post {
     }
 
     // получить все посты с пагинацией
-    async selectAll(page = 1, limit = 10) {
+    async selectAll(page = 1, limit = 10, sort = "rating", order = "desc") {
         const offset = (page - 1) * limit;
-        const [{ count }] = await this.db('posts').count('id as count');;
+        const [{ count }] = await this.db('posts').count('id as count');        
 
-        const posts = await this.db('posts')
-            .select('*')
-            .orderBy('created_at', 'desc')
-            .limit(limit)
-            .offset(offset);
-
-        return {
-            page: page,
-            totalPages: Math.ceil(count / limit),
-            totalPosts: count,
-            posts: posts
+        let query = this.db('posts') 
+            .select( 
+                'posts.*', 
+                this.db.raw("COUNT(CASE WHEN likes.type = 'like' THEN 1 END) as likes_count"), 
+                this.db.raw("COUNT(CASE WHEN likes.type = 'dislike' THEN 1 END) as dislikes_count"), 
+                this.db.raw("COUNT(CASE WHEN likes.type = 'like' THEN 1 END) - COUNT(CASE WHEN likes.type = 'dislike' THEN 1 END) as rating") 
+            ) 
+            .leftJoin('likes', 'posts.id', 'likes.post_id') 
+            .groupBy('posts.id'); 
+            
+        if (sort === 'date') { 
+            query = query.orderBy('posts.publish_date', order); 
+        } else if (sort === 'rating') { 
+            query = query.orderBy('rating', order); 
+        } else { 
+            query = query.orderBy('likes_count', order); 
+        } 
+        
+        const posts = await query.limit(limit).offset(offset); 
+        
+        return { 
+            page: page, 
+            totalPages: Math.ceil(count / limit), 
+            totalPosts: count, 
+            posts: posts 
         };
     }
 
