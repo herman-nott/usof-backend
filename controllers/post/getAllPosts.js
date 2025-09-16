@@ -7,8 +7,15 @@ async function handleGetAllPosts(req, res, db) {
         const sort = req.query.sort || "rating";   // likes или date
         const order = req.query.order || "desc";  // asc или desc
 
+        const filters = {
+            status: req.query.status || null,
+            categories: req.query.categories ? req.query.categories.split(',').map(Number) : [],
+            date_from: req.query.date_from || null,
+            date_to: req.query.date_to || null,
+        };
+        
         const postModel = new Post(db);
-        const result = await postModel.selectAll(page, limit, sort, order);
+        const result = await postModel.selectAll(page, limit, sort, order, filters);
 
         res.json(result);
     } catch (error) {

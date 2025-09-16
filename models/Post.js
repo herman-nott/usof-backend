@@ -4,7 +4,7 @@ class Post {
     }
 
     // получить все посты с пагинацией
-    async selectAll(page = 1, limit = 10, sort = "rating", order = "desc") {
+    async selectAll(page = 1, limit = 10, sort = "rating", order = "desc", filters = {}) {
         const offset = (page - 1) * limit;
         const [{ count }] = await this.db('posts').count('id as count');        
 
@@ -17,7 +17,27 @@ class Post {
             ) 
             .leftJoin('likes', 'posts.id', 'likes.post_id') 
             .groupBy('posts.id'); 
-            
+
+        // --- filtering ---
+        if (filters.categories && filters.categories.length > 0) {
+            query = query
+                .join('post_categories as pc', 'posts.id', 'pc.post_id')
+                .whereIn('pc.category_id', filters.categories);
+        }
+
+        if (filters.date_from) {
+            query = query.where('posts.publish_date', '>=', filters.date_from);
+        }
+
+        if (filters.date_to) {
+            query = query.where('posts.publish_date', '<=', filters.date_to);
+        }
+        
+        if (filters.status) {
+            query = query.where('posts.status', filters.status);
+        }
+
+        // --- sorting ---
         if (sort === 'date') { 
             query = query.orderBy('posts.publish_date', order); 
         } else if (sort === 'rating') { 
