@@ -4,7 +4,7 @@ class Post {
     }
 
     // получить все посты с пагинацией
-    async selectAll(page = 1, limit = 10, sort = "rating", order = "desc", filters = {}) {
+    async selectAll(page = 1, limit = 10, sort = "rating", order = "desc", filters = {}, user = null) {
         const offset = (page - 1) * limit;
         const [{ count }] = await this.db('posts').count('id as count');        
 
@@ -16,7 +16,25 @@ class Post {
                 this.db.raw("COUNT(CASE WHEN likes.type = 'like' THEN 1 END) - COUNT(CASE WHEN likes.type = 'dislike' THEN 1 END) as rating") 
             ) 
             .leftJoin('likes', 'posts.id', 'likes.post_id') 
-            .groupBy('posts.id'); 
+            .groupBy('posts.id');         
+
+        if (user) {
+            if (user.role === 'admin') {
+                // админ видит все посты
+            } else {
+                // обычный пользователь: активные + его собственные неактивные
+                query = query.where(function() {
+                    this.where('posts.status', 'active')
+                        .orWhere(function() {
+                            this.where('posts.status', 'inactive')
+                                .andWhere('posts.author_id', user.id);
+                        });
+                });
+            }
+        } else {
+            // неавторизованный пользователь: только активные
+            query = query.where('posts.status', 'active');
+        }
 
         // --- filtering ---
         if (filters.categories && filters.categories.length > 0) {

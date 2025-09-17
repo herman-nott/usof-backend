@@ -13,9 +13,12 @@ async function handleGetAllPosts(req, res, db) {
             date_from: req.query.date_from || null,
             date_to: req.query.date_to || null,
         };
-        
+
+        // создать юзера из сессии, если он авторизован, если нет, то юзер равен null
+        const user = req.session.user || null; 
+
         const postModel = new Post(db);
-        const result = await postModel.selectAll(page, limit, sort, order, filters);
+        const result = await postModel.selectAll(page, limit, sort, order, filters, user);
 
         res.json(result);
     } catch (error) {
