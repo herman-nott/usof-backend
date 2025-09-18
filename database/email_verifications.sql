@@ -1,3 +1,5 @@
+USE usof_db;
+
 CREATE TABLE email_verifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
