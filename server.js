@@ -67,6 +67,8 @@ import requirePostAuthorOrAdmin from "./middleware/requirePostAuthorOrAdmin.js";
 import requireEmailConfirmed from "./middleware/requireEmailConfirmed.js";
 import requireCommentAuthorOrAdmin from "./middleware/requireCommentAuthorOrAdmin.js";
 import requireOwnLike from "./middleware/requireOwnLike.js";
+import requirePostExists from "./middleware/requirePostExists.js";
+import requireCommentExists from "./middleware/requireCommentExists.js";
 
 // adminjs
 import AdminJS from 'adminjs';
@@ -129,9 +131,9 @@ async function start() {
     app.get('/api/users/:user_id', (req, res) => { handleGetUserById(req, res, db) });
     app.get('/api/posts', (req, res) => { handleGetAllPosts(req, res, db) });
     app.get('/api/posts/:post_id', (req, res) => { handleGetPostById(req, res, db) });
-    app.get('/api/posts/:post_id/comments', (req, res) => { handleGetCommentsByPostId(req, res, db) });
-    app.get('/api/posts/:post_id/categories', (req, res) => { handleGetCategoriesByPostId(req, res, db) });
-    app.get('/api/posts/:post_id/like', (req, res) => { handleGetLikesByPostId(req, res, db) });
+    app.get('/api/posts/:post_id/comments', requirePostExists, (req, res) => { handleGetCommentsByPostId(req, res, db) });
+    app.get('/api/posts/:post_id/categories', requirePostExists, (req, res) => { handleGetCategoriesByPostId(req, res, db) });
+    app.get('/api/posts/:post_id/like', requirePostExists, (req, res) => { handleGetLikesByPostId(req, res, db) });
     app.get('/api/categories', (req, res) => { handleGetAllCategories(req, res, db) });
     app.get('/api/categories/:category_id', (req, res) => { handleGetCategoryById(req, res, db) });
     app.get('/api/categories/:category_id/posts', (req, res) => { handleGetPostsByCategoryId(req, res, db) });
@@ -145,12 +147,12 @@ async function start() {
     app.post('/api/auth/password-reset', (req, res) => { handlePasswordReset(req, res, db, crypto, nodemailer) });
     app.post('/api/auth/password-reset/:confirm_token', (req, res) => { handlePasswordResetConfirm(req, res, db, bcrypt, crypto) });
     app.post('/api/users', requireAdmin, (req, res) => { handleCreateUser(req, res, db, bcrypt) });
-    app.post('/api/posts/:post_id/comments', requireAuth, (req, res) => { handleCreateComment(req, res, db) });
+    app.post('/api/posts/:post_id/comments', requireAuth, requirePostExists, (req, res) => { handleCreateComment(req, res, db) });
     app.post('/api/posts/', requireAuth, (req, res) => { handleCreatePost(req, res, db) });
-    app.post('/api/posts/:post_id/like', requireAuth, (req, res) => { handleCreateLikeForPost(req, res, db) });
+    app.post('/api/posts/:post_id/like', requireAuth, requirePostExists, (req, res) => { handleCreateLikeForPost(req, res, db) });
     app.post('/api/auth/register/verify-email', (req, res) => { handleVerifyEmail(req, res, db) });
     app.post('/api/categories', (req, res) => { handleCreateCategory(req, res, db) });
-    app.post('/api/comments/:comment_id/like', requireAuth, (req, res) => { handleCreateLikeForComment(req, res, db) });
+    app.post('/api/comments/:comment_id/like', requireAuth, requireCommentExists, (req, res) => { handleCreateLikeForComment(req, res, db) });
 
     // === PATCH Requests ===
     app.patch('/api/users/avatar', requireAuth, upload.single('avatar'), (req, res) => { handleUpdateAvatar(req, res, db) });
