@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import session from "express-session";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+import cors from "cors";
 
 // database
 import db from "./db.js";
@@ -121,6 +122,7 @@ async function start() {
         cookie: { secure: false }             // для разработки secure: false, в проде с HTTPS нужно secure: true
     }));
     app.use("/uploads", express.static("uploads"));
+    app.use(cors());
 
 
     // === GET Requests ===
