@@ -7,9 +7,18 @@ async function handlePasswordResetConfirm(req, res, db, bcrypt, crypto) {
 
         const { confirm_token } = req.params;
         const { new_password } = req.body;
+        const { new_password_confirmation } = req.body;
 
         if (!new_password) {
             return res.status(400).json({ error: "Password is required" });
+        }
+
+        if (new_password !== new_password_confirmation) {
+            return res.status(400).json({ error: "Passwords don't match" });
+        }
+
+        if (new_password.length < 6) {
+            return res.status(400).json({ error: "Password must contain at least 6 characters" });
         }
 
         // поиск токена

@@ -24,6 +24,11 @@ class User {
         return await this.db('users').where({ email: userEmail }).first();
     }
 
+    // поиск по логину
+    async findByLogin(userLogin) {
+        return await this.db('users').where({ login: userLogin }).first();
+    }
+
     // обновить пароль
     async updatePassword(userId, newHashedPassword) {
         return await this.db('users')

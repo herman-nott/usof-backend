@@ -8,26 +8,44 @@ async function handleRegister(req, res, db, bcrypt, nodemailer) {
 
     try {
         if (password !== password_confirmation) {
-            return res.status(400).send('Passwords don\'t match');
+            return res.status(400).json({ error: "Passwords don't match" });
+        }
+
+        if (!login || !email || !password || !password_confirmation) {
+            return res.status(400).json({ error: "Please fill in all required fields" });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ error: "Password must contain at least 6 characters" });
+        }
+
+        const existingLoginUser = await userModel.findByLogin(login);
+        if (existingLoginUser && existingLoginUser.is_email_confirmed) {
+            return res.status(400).json({ error: "Login is already taken" });
+        }
+
+        const existingEmailUser = await userModel.findByEmail(email);
+        if (existingEmailUser && existingEmailUser.is_email_confirmed) {
+            return res.status(400).json({ error: "Email is already registered" });
         }
 
         const hash = await bcrypt.hash(password, 10);
 
-        let newUser = await userModel.findByEmail(email);
+        let newUser;
+        
+        if ((existingLoginUser && !existingLoginUser.is_email_confirmed) || 
+            (existingEmailUser && !existingEmailUser.is_email_confirmed)) {
+            
+            const userToUpdate = existingLoginUser || existingEmailUser;
 
-        if (newUser) {
-            if (newUser.is_email_confirmed) {
-                return res.status(400).json({ error: "Email is already registered" });
-            } else {
-                // email есть, но не подтверждён → обновляем данные
-                await userModel.update(newUser.id, {
-                    login,
-                    password_hash: hash,
-                    full_name: `${firstname} ${lastname}`,
-                    updated_at: new Date()
-                });
-                newUser = await userModel.findById(newUser.id);
-            }
+            await userModel.update(userToUpdate.id, {
+                login,
+                password_hash: hash,
+                full_name: `${firstname} ${lastname}`,
+                email,
+                updated_at: new Date()
+            });
+            newUser = await userModel.findById(existingEmailUser.id);
         } else {
             const id = await userModel.create({
                 login: login,
@@ -75,9 +93,9 @@ async function handleRegister(req, res, db, bcrypt, nodemailer) {
             };
 
             await transporter.sendMail(mailOptions);
-            console.log(`Password reset email sent to ${newUser.email}`);
+            // console.log(`Password reset email sent to ${newUser.email}`);
         } catch (error) {
-            console.error('Error sending email confirmation email:', error);
+            // console.error('Error sending email confirmation email:', error);
             res.status(500).send('Unable to register');
         }
 

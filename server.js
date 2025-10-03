@@ -122,7 +122,10 @@ async function start() {
         cookie: { secure: false }             // для разработки secure: false, в проде с HTTPS нужно secure: true
     }));
     app.use("/uploads", express.static("uploads"));
-    app.use(cors());
+    app.use(cors({
+        origin: 'http://localhost:5173',
+        credentials: true
+    }));
 
 
     // === GET Requests ===
