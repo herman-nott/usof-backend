@@ -6,7 +6,7 @@ async function handleCreatePost(req, res, db) {
         const { title, content, categories } = req.body;
 
         if (!title || !content || !categories || !Array.isArray(categories)) {
-            return res.status(400).json({ error: "title, content and categories are required" });
+            return res.status(400).json({ error: "Title, content and categories are required" });
         }
 
         const authorId = req.session.user.id;
