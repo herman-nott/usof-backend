@@ -11,7 +11,32 @@ class User {
 
     // поиск по id
     async findById(userId) {
-        return await this.db('users').where({ id: userId }).first();
+        // return await this.db('users').where({ id: userId }).first();
+
+        const user = await this.db('users').where({ id: userId }).first();
+        if (!user) return null;
+
+        const postLikes = await this.db('likes')
+            .join('posts', 'likes.post_id', 'posts.id')
+            .where('posts.author_id', userId)
+            .select('likes.type');
+
+        const commentLikes = await this.db('likes')
+            .join('comments', 'likes.comment_id', 'comments.id')
+            .where('comments.author_id', userId)
+            .select('likes.type');
+
+        let likes = 0;
+        let dislikes = 0;
+
+        [...postLikes, ...commentLikes].forEach(like => {
+            if (like.type === 'like') likes++;
+            else if (like.type === 'dislike') dislikes++;
+        });
+
+        user.rating = likes - dislikes;
+
+        return user;
     }
 
     // поиск по эмейлу или логину
