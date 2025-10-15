@@ -3,9 +3,9 @@ import PostCategory from "../../models/PostCategory.js";
 
 async function handleCreatePost(req, res, db) {
     try {
-        const { title, content, categories } = req.body;
+        const { title, content, categories, status } = req.body;
 
-        if (!title || !content || !categories || !Array.isArray(categories)) {
+        if (!title || !content || !categories || !status || !Array.isArray(categories)) {
             return res.status(400).json({ error: "Title, content and categories are required" });
         }
 
@@ -14,7 +14,7 @@ async function handleCreatePost(req, res, db) {
         const postModel = new Post(db);
         const postCategoryModel = new PostCategory(db);
 
-        const newPost = await postModel.create(authorId, title, content);
+        const newPost = await postModel.create(authorId, title, content, status);
 
         await postCategoryModel.attachCategoriesToPost(newPost.id, categories);
 

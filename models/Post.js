@@ -18,7 +18,7 @@ class Post {
             .leftJoin('likes', 'posts.id', 'likes.post_id') 
             .groupBy('posts.id');         
 
-        if (user) {
+        if (user && user.id) {
             if (user.role === 'admin') {
                 // админ видит все посты
             } else {
@@ -80,11 +80,12 @@ class Post {
     }
 
     // создать пост
-    async create(authorId, title, content) {
+    async create(authorId, title, content, status) {
         const [id] = await this.db("posts").insert({
             author_id: authorId,
             title: title,
-            content: content
+            content: content,
+            status: status
         });
 
         return await this.db("posts").where({ id: id }).first();
