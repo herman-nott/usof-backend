@@ -7,7 +7,7 @@ async function handleUpdateAvatar(req, res, db) {
         }
 
         const userId = req.session.user.id;
-        const avatarPath = `/uploads/avatars/${req.file.filename}`;
+        const avatarPath = `uploads/avatars/${req.file.filename}`;
 
         const userModel = new User(db);
         await userModel.updateAvatar(userId, avatarPath);
