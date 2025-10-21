@@ -113,7 +113,7 @@ async function start() {
 
     const router = Plugin.buildRouter(admin);
 
-    app.use(admin.options.rootPath, router);
+    app.use(admin.options.rootPath, router, requireAuth, requireAdmin);
     app.use(bodyParser.json());
     app.use(session({
         secret: process.env.SESSION_SECRET,
