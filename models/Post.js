@@ -4,7 +4,7 @@ class Post {
     }
 
     // получить все посты с пагинацией
-    async selectAll(page = 1, limit = 10, sort = "rating", order = "desc", filters = {}, user = null) {
+    async selectAll(page = 1, limit = 10, sort = "date", order = "desc", filters = {}, user = null) {
         const offset = (page - 1) * limit;
         const [{ count }] = await this.db('posts').count('id as count');        
 

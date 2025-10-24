@@ -4,7 +4,7 @@ async function handleGetAllPosts(req, res, db) {
     try {
         const page = parseInt(req.query.page) || 1;   // текущая страница
         const limit = parseInt(req.query.limit) || 10; // постов на страницу
-        const sort = req.query.sort || "rating";   // likes или date
+        const sort = req.query.sort || "date";   // likes или date
         const order = req.query.order || "desc";  // asc или desc
 
         const filters = {
